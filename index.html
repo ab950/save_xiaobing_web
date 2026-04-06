@@ -25,11 +25,10 @@
     </div>
 
     <script>
-      var buildUrl = "Build";
+      var buildUrl = "Build"; // 必须是大写 B，因为你的文件夹叫 Build
       var loaderUrl = buildUrl + "/WebGL_Build.loader.js";
       var config = {
-        /* 注意：请根据你 GitHub 仓库里的真实文件名微调后缀 */
-        dataUrl: buildUrl + "/WebGL_Build.data", 
+        dataUrl: buildUrl + "/WebGL_Build.data",           // 确认无后缀
         frameworkUrl: buildUrl + "/WebGL_Build.framework.js",
         codeUrl: buildUrl + "/WebGL_Build.wasm",
         streamingAssetsUrl: "StreamingAssets",
@@ -39,7 +38,6 @@
         matchWebGLToCanvasSize: false,
         devicePixelRatio: window.devicePixelRatio || 1,
       };
-
       var canvas = document.querySelector("#unity-canvas");
       var script = document.createElement("script");
       script.src = loaderUrl;

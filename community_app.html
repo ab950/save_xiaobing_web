@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>心灵驿站 · 互助社区</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7f5;
+            padding-bottom: 70px;
+        }
+
+        .app {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #f5f7f5;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Tab 栏 */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 20px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid #e8ece8;
+            z-index: 100;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 15px;
+            border-radius: 30px;
+        }
+
+        .tab-item.active {
+            color: #7C9E6E;
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
+        .page {
+            display: none;
+            padding: 12px;
+            padding-bottom: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 帖子卡片 */
+        .post-card {
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            cursor: pointer;
+            border: 1px solid #eef2ee;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #9BBF8A, #7C9E6E);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .avatar-small {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .avatar-large {
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+            margin: 0 auto;
+        }
+
+        .nickname {
+            font-weight: 600;
+            color: #2C3E2F;
+            font-size: 14px;
+        }
+
+        .emotion-tag {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #F8EDE3;
+            color: #F4A261;
+        }
+
+        .emotion-tag.anxiety { background: #FFE8E8; color: #E87C7C; }
+        .emotion-tag.happy { background: #E8F5E8; color: #7C9E6E; }
+        .emotion-tag.sad { background: #E8ECF5; color: #6B8C9E; }
+        .emotion-tag.tired { background: #F0E8F0; color: #B89E6E; }
+
+        .post-content {
+            color: #3A4A3A;
+            font-size: 15px;
+            line-height: 1.5;
+            margin: 10px 0;
+            word-break: break-word;
+        }
+
+        .post-footer {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f2f0;
+        }
+
+        .post-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8A9A8A;
+            font-size: 13px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 20px;
+        }
+
+        .post-time {
+            font-size: 11px;
+            color: #B0BEB0;
+            margin-left: auto;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: calc(50% - 220px);
+            width: 56px;
+            height: 56px;
+            background: #7C9E6E;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(124,158,110,0.4);
+            cursor: pointer;
+            z-index: 99;
+        }
+
+        @media (max-width: 500px) {
+            .fab { right: 20px; }
+        }
+
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 20px;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-input, .modal-textarea, .modal-select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #e0e8e0;
+            border-radius: 12px;
+            font-size: 15px;
+        }
+
+        .modal-textarea {
+            min-height: 80px;
+        }
+
+        .modal-btn {
+            background: #7C9E6E;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 12px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .close-modal {
+            background: #f0f2f0;
+            color: #666;
+        }
+
+        /* 详情页 */
+        .detail-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #f5f7f5;
+            z-index: 150;
+            display: none;
+            overflow-y: auto;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .detail-page.active {
+            display: block;
+        }
+
+        .detail-header {
+            background: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #eef2ee;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .comment-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+        }
+
+        /* 小组卡片 */
+        .group-card {
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .group-info h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .group-info p {
+            font-size: 12px;
+            color: #8A9A8A;
+        }
+
+        .join-btn {
+            background: #7C9E6E;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .joined-badge {
+            color: #7C9E6E;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #B0BEB0;
+        }
+
+        .filter-bar {
+            background: white;
+            padding: 12px;
+            border-radius: 30px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        .filter-chip {
+            padding: 6px 16px;
+            border-radius: 30px;
+            background: #f0f2f0;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .filter-chip.active {
+            background: #7C9E6E;
+            color: white;
+        }
+
+        .my-item {
+            background: white;
+            padding: 14px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+            padding: 4px 8px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .edit-profile-btn {
+            background: #f0f2f0;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            margin-top: 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #eef2ee;
+            cursor: pointer;
+        }
+
+        .user-item:hover {
+            background: #f8faf8;
+        }
+
+        /* 小组详情页 */
+.group-detail-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #f5f7f5;
+    z-index: 150;
+    display: none;
+    overflow-y: auto;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.group-detail-page.active {
+    display: block;
+}
+
+.member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8faf8;
+    border-radius: 12px;
+}
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- 三个页面 -->
+    <div id="homePage" class="page active">
+        <div class="filter-bar">
+            <span class="filter-chip active" data-filter="">全部</span>
+            <span class="filter-chip" data-filter="开心">😊 开心</span>
+            <span class="filter-chip" data-filter="焦虑">😟 焦虑</span>
+            <span class="filter-chip" data-filter="难过">😢 难过</span>
+            <span class="filter-chip" data-filter="疲惫">😫 疲惫</span>
+        </div>
+        <div id="postList"></div>
+    </div>
+
+    <div id="groupPage" class="page">
+        <div style="margin-bottom: 16px;">
+            <h3>🌟 我加入的小组</h3>
+            <div id="myGroupsList"></div>
+        </div>
+        <div>
+            <h3>📌 推荐小组</h3>
+            <div id="allGroupsList"></div>
+        </div>
+        <button class="modal-btn" onclick="openCreateGroupModal()">+ 创建新小组</button>
+    </div>
+
+    <div id="profilePage" class="page">
+        <!-- 用户资料卡片 -->
+        <div class="profile-card">
+        <div class="avatar avatar-large" id="profileAvatar">😊</div>
+        <h2 id="profileNickname" style="margin: 12px 0 4px;">加载中...</h2>
+        <p id="profileBio" style="color: #8A9A8A; font-size: 13px;"></p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button class="edit-profile-btn" onclick="openEditProfileModal()">✏️ 编辑资料</button>
+            <button class="edit-profile-btn" onclick="openSwitchUserModal()">🔄 切换账号</button>
+            <button class="edit-profile-btn" style="background: #ffebee; color: #e87c7c;" onclick="openDeleteAccountModal()">🗑️ 注销账号</button>
+        </div>
+</div>
+
+        <!-- 统计数据 -->
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <div style="flex:1; background: white; border-radius: 16px; padding: 12px; text-align: center;">
+                <div style="font-size: 20px; font-weight: bold; color: #7C9E6E;" id="postCount">0</div>
+                <div style="font-size: 12px; color: #999;">发帖数</div>
+            </div>
+            <div style="flex:1; background: white; border-radius: 16px; padding: 12px; text-align: center;">
+                <div style="font-size: 20px; font-weight: bold; color: #7C9E6E;" id="groupCount">0</div>
+                <div style="font-size: 12px; color: #999;">加入小组</div>
+            </div>
+        </div>
+
+        <!-- 内容切换 -->
+        <div style="background: white; border-radius: 20px; overflow: hidden;">
+            <div style="display: flex; border-bottom: 1px solid #eef2ee;">
+                <button class="tab-item" style="flex:1; border-radius: 0;" data-mytab="posts">我的帖子</button>
+                <button class="tab-item" style="flex:1; border-radius: 0;" data-mytab="groups">我的小组</button>
+            </div>
+            <div id="myPostsList" style="padding: 12px;"></div>
+            <div id="myGroupsListProfile" style="padding: 12px; display: none;"></div>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-item active" data-page="home"><span class="tab-icon">🏠</span><span>首页</span></button>
+        <button class="tab-item" data-page="group"><span class="tab-icon">👥</span><span>小组</span></button>
+        <button class="tab-item" data-page="profile"><span class="tab-icon">👤</span><span>我的</span></button>
+    </div>
+
+    <div id="fabButton" class="fab" onclick="openPostModal()">+</div>
+
+    <!-- 发布帖子弹窗 -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">发布新帖</div>
+            <select id="postEmotion" class="modal-select">
+                <option value="开心">😊 开心</option>
+                <option value="焦虑">😟 焦虑</option>
+                <option value="难过">😢 难过</option>
+                <option value="疲惫">😫 疲惫</option>
+            </select>
+            <textarea id="postContentInput" class="modal-textarea" placeholder="分享你的心情..."></textarea>
+            <button class="modal-btn" onclick="submitPost()">发布</button>
+            <button class="modal-btn close-modal" onclick="closeModal('postModal')">取消</button>
+        </div>
+    </div>
+
+    <!-- 创建小组弹窗 -->
+    <div id="groupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">创建新小组</div>
+            <input type="text" id="groupNameInput" class="modal-input" placeholder="小组名称">
+            <select id="groupTypeInput" class="modal-select">
+                <option value="焦虑应对">焦虑应对</option>
+                <option value="早起打卡">早起打卡</option>
+                <option value="情绪疏导">情绪疏导</option>
+                <option value="减压放松">减压放松</option>
+            </select>
+            <textarea id="groupDescInput" class="modal-textarea" placeholder="小组描述..."></textarea>
+            <button class="modal-btn" onclick="submitGroup()">创建</button>
+            <button class="modal-btn close-modal" onclick="closeModal('groupModal')">取消</button>
+        </div>
+    </div>
+
+    <!-- 编辑资料弹窗 -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">编辑资料</div>
+            <input type="text" id="editNickname" class="modal-input" placeholder="昵称">
+            <textarea id="editBio" class="modal-textarea" placeholder="个人简介..."></textarea>
+            <select id="editAvatar" class="modal-select">
+                <option value="😊">😊 微笑</option>
+                <option value="🌟">🌟 星星</option>
+                <option value="🌸">🌸 花朵</option>
+                <option value="🌱">🌱 萌芽</option>
+                <option value="💪">💪 加油</option>
+            </select>
+            <button class="modal-btn" onclick="saveProfile()">保存</button>
+            <button class="modal-btn close-modal" onclick="closeModal('editProfileModal')">取消</button>
+        </div>
+    </div>
+
+    <!-- 切换账号弹窗 -->
+    <div id="switchUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">切换账号</div>
+            <div id="userList" class="user-list"></div>
+            <button class="modal-btn" onclick="openRegisterModal()">➕ 注册新账号</button>
+            <button class="modal-btn close-modal" onclick="closeModal('switchUserModal')">取消</button>
+        </div>
+    </div>
+
+    <!-- 注册账号弹窗 -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">注册新账号</div>
+            <input type="text" id="regNickname" class="modal-input" placeholder="昵称">
+            <textarea id="regBio" class="modal-textarea" placeholder="个人简介（选填）"></textarea>
+            <select id="regAvatar" class="modal-select">
+                <option value="😊">😊 微笑</option>
+                <option value="🌟">🌟 星星</option>
+                <option value="🌸">🌸 花朵</option>
+                <option value="🌱">🌱 萌芽</option>
+                <option value="💪">💪 加油</option>
+            </select>
+            <button class="modal-btn" onclick="registerUser()">注册</button>
+            <button class="modal-btn close-modal" onclick="closeModal('registerModal')">取消</button>
+        </div>
+    </div>
+
+    <!-- 注销账号弹窗 -->
+<div id="deleteAccountModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">⚠️ 注销账号</div>
+        <p style="text-align: center; margin: 16px 0; color: #e87c7c;">注销后，你的所有帖子、评论都将被删除，且无法恢复！</p>
+        <p style="text-align: center; margin-bottom: 16px; font-size: 14px; color: #999;">确认注销账号 <strong id="deleteAccountName"></strong> 吗？</p>
+        <input type="text" id="confirmDeleteInput" class="modal-input" placeholder='请输入"确认注销"以继续' style="text-align: center;">
+        <button class="modal-btn" style="background: #e87c7c;" onclick="confirmDeleteAccount()">确认注销</button>
+        <button class="modal-btn close-modal" onclick="closeModal('deleteAccountModal')">取消</button>
+    </div>
+</div>
+
+    <!-- 帖子详情页 -->
+    <div id="detailPage" class="detail-page">
+        <div class="detail-header">
+            <button class="back-btn" onclick="closeDetail()">←</button>
+            <span>帖子详情</span>
+        </div>
+        <div id="detailContent" style="padding: 16px;"></div>
+        <div style="padding: 12px; background: white; margin-top: 12px;">
+            <textarea id="commentInput" class="modal-textarea" placeholder="写下你的评论..."></textarea>
+            <button class="modal-btn" onclick="submitComment()">发表评论</button>
+        </div>
+    </div>
+
+    <!-- 小组详情页 -->
+<div id="groupDetailPage" class="group-detail-page">
+    <div class="detail-header">
+        <button class="back-btn" onclick="closeGroupDetail()">←</button>
+        <span style="font-weight: 600;" id="groupDetailTitle">小组详情</span>
+        <button id="groupLeaveBtn" style="margin-left: auto; background: none; border: none; color: #e87c7c; font-size: 14px; cursor: pointer;" onclick="leaveGroupFromDetail()">退出</button>
+    </div>
+
+    <div style="padding: 16px;">
+        <!-- 小组信息 -->
+        <div id="groupDetailInfo" style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-around;">
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; font-weight: bold; color: #7C9E6E;" id="groupMemberCount">0</div>
+                    <div style="font-size: 12px; color: #999;">成员</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; font-weight: bold; color: #7C9E6E;" id="groupPostCount">0</div>
+                    <div style="font-size: 12px; color: #999;">动态</div>
+                </div>
+            </div>
+            <div id="groupDescription" style="margin-top: 12px; text-align: center; font-size: 13px; color: #666;"></div>
+        </div>
+
+        <!-- 发布按钮和成员列表按钮 -->
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <button class="join-btn" style="flex:1;" onclick="openGroupPostModal()">📝 发布动态</button>
+            <button class="join-btn" style="flex:1; background: #8A9A8A;" onclick="showGroupMembers()">👥 成员列表</button>
+        </div>
+
+        <!-- 小组动态列表 -->
+        <h3 style="margin-bottom: 12px;">🔥 小组动态</h3>
+        <div id="groupPostsList"></div>
+    </div>
+</div>
+
+<!-- 小组发帖弹窗 -->
+<div id="groupPostModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">发布小组动态</div>
+        <select id="groupPostEmotion" class="modal-select">
+            <option value="">无标签</option>
+            <option value="开心">😊 开心</option>
+            <option value="焦虑">😟 焦虑</option>
+            <option value="难过">😢 难过</option>
+            <option value="疲惫">😫 疲惫</option>
+        </select>
+        <textarea id="groupPostContent" class="modal-textarea" placeholder="分享你在小组里的心情..."></textarea>
+        <button class="modal-btn" onclick="submitGroupPost()">发布</button>
+        <button class="modal-btn close-modal" onclick="closeModal('groupPostModal')">取消</button>
+    </div>
+</div>
+
+<!-- 成员列表弹窗 -->
+<div id="membersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">小组成员</div>
+        <div id="membersList" class="member-list" style="max-height: 400px; overflow-y: auto;"></div>
+        <button class="modal-btn close-modal" onclick="closeModal('membersModal')">关闭</button>
+    </div>
+</div>
+</div>
+
+<script>
+    const API_BASE = "https://community-api-242473-4-1419304385.sh.run.tcloudbase.com";
+    let currentUserId = 1;
+    let currentFilter = "";
+    let currentPostId = null;  // 当前查看的帖子ID
+    let currentGroupId = null;
+
+    // 用户数据
+    let users = {
+        1: { id: 1, nickname: "心灵旅人", bio: "一起成长，一起治愈", avatar: "😊" },
+        2: { id: 2, nickname: "阳光暖暖", bio: "每天都要开心呀", avatar: "🌟" }
+    };
+    let nextUserId = 3;
+
+    // 点赞记录
+    window.likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
+    window.likedGroupPosts = JSON.parse(localStorage.getItem('likedGroupPosts') || '{}');
+
+    function saveUsers() {
+        localStorage.setItem("community_users", JSON.stringify(users));
+        localStorage.setItem("nextUserId", nextUserId);
+    }
+
+    function loadUsers() {
+        const saved = localStorage.getItem("community_users");
+        if (saved) users = JSON.parse(saved);
+        const savedNextId = localStorage.getItem("nextUserId");
+        if (savedNextId) nextUserId = parseInt(savedNextId);
+    }
+
+    function getCurrentUser() {
+        return users[currentUserId] || { id: currentUserId, nickname: "用户" + currentUserId, bio: "", avatar: "😊" };
+    }
+
+    function updateProfileUI() {
+        const u = getCurrentUser();
+        document.getElementById("profileAvatar").innerText = u.avatar;
+        document.getElementById("profileNickname").innerText = u.nickname;
+        document.getElementById("profileBio").innerText = u.bio || "这个人很懒~";
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove("active");
+    }
+
+    function getEmotionClass(tag) {
+        const map = { '焦虑': 'anxiety', '开心': 'happy', '难过': 'sad', '疲惫': 'tired' };
+        return map[tag] || '';
+    }
+
+    // ========== 帖子相关 ==========
+    async function loadPosts() {
+        const url = currentFilter ? `${API_BASE}/api/posts?emotion_tag=${currentFilter}` : `${API_BASE}/api/posts`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.code === 200) renderPosts(data.data);
+    }
+
+    function renderPosts(posts) {
+        const container = document.getElementById("postList");
+        if (!posts.length) {
+            container.innerHTML = '<div class="empty-state">✨ 暂无帖子，发布第一条吧</div>';
+            return;
+        }
+        container.innerHTML = posts.map(post => {
+            const user = users[post.user_id] || { avatar: "😊", nickname: post.anonymous_name };
+            const hasLiked = window.likedPosts && window.likedPosts[post.post_id] === currentUserId;
+            const heartIcon = hasLiked ? '❤️' : '🤍';
+            const heartColor = hasLiked ? 'color: #e87c7c;' : '';
+            return `
+                <div class="post-card" onclick="openDetail(${post.post_id})">
+                    <div class="post-header">
+                        <div class="user-info">
+                            <div class="avatar">${user.avatar}</div>
+                            <div>
+                                <div class="nickname">${post.anonymous_name}</div>
+                                <div class="post-time">${post.created_at}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="emotion-tag ${getEmotionClass(post.emotion_tag)}">${post.emotion_tag}</span>
+                            ${post.user_id === currentUserId ? `<button class="delete-btn" onclick="event.stopPropagation(); deletePost(${post.post_id})">🗑️</button>` : ''}
+                        </div>
+                    </div>
+                    <div class="post-content">${escapeHtml(post.content)}</div>
+                    <div class="post-footer">
+                        <button class="post-action" onclick="event.stopPropagation(); likePost(${post.post_id})" style="${heartColor}">${heartIcon} ${post.likes}</button>
+                        <button class="post-action" onclick="event.stopPropagation(); openDetail(${post.post_id})">💬 ${post.comments?.length || 0}</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function likePost(postId) {
+        if (!window.likedPosts) window.likedPosts = {};
+        const hasLiked = window.likedPosts[postId] === currentUserId;
+        const url = hasLiked ? `${API_BASE}/api/posts/${postId}/unlike` : `${API_BASE}/api/posts/${postId}/like`;
+        const res = await fetch(url, { method: 'POST' });
+        const data = await res.json();
+        if (data.code === 200) {
+            if (hasLiked) delete window.likedPosts[postId];
+            else window.likedPosts[postId] = currentUserId;
+            localStorage.setItem('likedPosts', JSON.stringify(window.likedPosts));
+            loadPosts();
+        }
+    }
+
+    async function deletePost(postId) {
+        if (confirm('确定删除？')) {
+            await fetch(`${API_BASE}/api/posts/${postId}`, { method: 'DELETE' });
+            loadPosts();
+            if (currentPostId === postId) closeDetail();
+        }
+    }
+
+    // ========== 帖子详情页 ==========
+    async function openDetail(postId) {
+        currentPostId = postId;  // 关键：设置全局变量
+        console.log("打开帖子ID:", postId);
+
+        try {
+            const response = await fetch(`${API_BASE}/api/posts/${postId}`);
+            const data = await response.json();
+
+            if (data.code === 200) {
+                const post = data.data;
+                const user = users[post.user_id] || { avatar: "😊", nickname: post.anonymous_name };
+                const hasLiked = window.likedPosts && window.likedPosts[post.post_id] === currentUserId;
+                const heartIcon = hasLiked ? '❤️' : '🤍';
+                const heartColor = hasLiked ? 'color: #e87c7c;' : '';
+
+                // 渲染评论列表（带删除按钮）
+let commentsHtml = '';
+if (post.comments && post.comments.length > 0) {
+    commentsHtml = post.comments.map(c => `
+        <div style="padding:12px 0; border-bottom:1px solid #f0f2f0;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <div class="avatar avatar-small" style="width:32px; height:32px; font-size:14px;">${c.anonymous_name.charAt(0)}</div>
+                <div style="flex:1;">
+                    <div style="font-weight:600; font-size:14px;">${c.anonymous_name}</div>
+                    <div style="font-size:11px; color:#999;">${c.created_at}</div>
+                </div>
+                ${c.user_id === currentUserId ? `
+                    <button class="delete-btn" onclick="deleteComment(${post.post_id}, ${c.comment_id})" style="font-size:14px;">🗑️</button>
+                ` : ''}
+            </div>
+            <div style="font-size:14px; margin-left:42px;">${escapeHtml(c.content)}</div>
+        </div>
+    `).join('');
+} else {
+    commentsHtml = '<div style="text-align:center; padding:20px; color:#999;">暂无评论，来抢沙发吧~</div>';
+}
+
+                document.getElementById("detailContent").innerHTML = `
+                    <div style="background:white; border-radius:16px; padding:20px; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="avatar" style="width:45px; height:45px; font-size:20px;">${user.avatar}</div>
+                                <div>
+                                    <div style="font-weight:600; font-size:16px;">${post.anonymous_name}</div>
+                                    <div style="font-size:12px; color:#999;">${post.created_at}</div>
+                                </div>
+                            </div>
+                            <span class="emotion-tag ${getEmotionClass(post.emotion_tag)}">${post.emotion_tag}</span>
+                        </div>
+                        <div style="font-size:16px; line-height:1.6; margin:16px 0;">${escapeHtml(post.content)}</div>
+                        <div style="display:flex; gap:24px; padding-top:12px; border-top:1px solid #eee;">
+                            <button class="post-action" onclick="likePostInDetail(${post.post_id})" style="${heartColor}">
+                                ${heartIcon} <span id="detailLikeCount">${post.likes}</span>
+                            </button>
+                            <button class="post-action">💬 ${post.comments?.length || 0} 评论</button>
+                            ${post.user_id === currentUserId ? `<button class="post-action" onclick="deletePostFromDetail(${post.post_id})" style="color:#e87c7c;">🗑️ 删除</button>` : ''}
+                        </div>
+                    </div>
+                    <div style="background:white; border-radius:16px; padding:20px;">
+                        <div style="font-weight:600; margin-bottom:16px;">📝 评论</div>
+                        <div id="commentsList">${commentsHtml}</div>
+                    </div>
+                `;
+                document.getElementById("detailPage").classList.add("active");
+            }
+        } catch (error) {
+            console.error("加载失败:", error);
+            alert("加载失败");
+        }
+    }
+
+    // 删除评论
+async function deleteComment(postId, commentId) {
+    if (!confirm('确定要删除这条评论吗？')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/posts/${postId}/comments/${commentId}?user_id=${currentUserId}`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+
+        if (data.code === 200) {
+            // 刷新详情页
+            await openDetail(postId);
+        } else {
+            alert("删除失败：" + (data.message || "未知错误"));
+        }
+    } catch (error) {
+        console.error("删除失败:", error);
+        alert("删除失败，请重试");
+    }
+}
+
+    async function likePostInDetail(postId) {
+        if (!window.likedPosts) window.likedPosts = {};
+        const hasLiked = window.likedPosts[postId] === currentUserId;
+        const url = hasLiked ? `${API_BASE}/api/posts/${postId}/unlike` : `${API_BASE}/api/posts/${postId}/like`;
+        const res = await fetch(url, { method: 'POST' });
+        const data = await res.json();
+        if (data.code === 200) {
+            if (hasLiked) delete window.likedPosts[postId];
+            else window.likedPosts[postId] = currentUserId;
+            localStorage.setItem('likedPosts', JSON.stringify(window.likedPosts));
+            const countSpan = document.getElementById("detailLikeCount");
+            if (countSpan) {
+                const current = parseInt(countSpan.innerText);
+                countSpan.innerText = hasLiked ? current - 1 : current + 1;
+            }
+            loadPosts();
+        }
+    }
+
+    async function deletePostFromDetail(postId) {
+        if (confirm('确定删除？')) {
+            await fetch(`${API_BASE}/api/posts/${postId}`, { method: 'DELETE' });
+            closeDetail();
+            loadPosts();
+        }
+    }
+
+    function closeDetail() {
+        document.getElementById("detailPage").classList.remove("active");
+        currentPostId = null;
+    }
+
+    // 发表评论 - 使用全局变量 currentPostId
+    async function submitComment() {
+        const content = document.getElementById("commentInput").value;
+
+        if (!content.trim()) {
+            alert("请输入评论内容");
+            return;
+        }
+
+        if (!currentPostId) {
+            alert("出错了，请重新打开帖子");
+            return;
+        }
+
+        try {
+            const url = `${API_BASE}/api/posts/${currentPostId}/comments?user_id=${currentUserId}&content=${encodeURIComponent(content)}`;
+            const response = await fetch(url, { method: 'POST' });
+            const data = await response.json();
+
+            if (data.code === 200) {
+                document.getElementById("commentInput").value = "";
+                // 重新加载详情页
+                await openDetail(currentPostId);
+            } else {
+                alert("评论失败：" + (data.message || "未知错误"));
+            }
+        } catch (error) {
+            console.error("评论失败:", error);
+            alert("评论失败");
+        }
+    }
+
+    // ========== 小组相关 ==========
+    async function loadGroups() {
+        const res = await fetch(`${API_BASE}/api/groups`);
+        const data = await res.json();
+        if (data.code === 200) renderGroups(data.data);
+    }
+
+    function renderGroups(groups) {
+        const notJoined = groups.filter(g => !g.members.includes(currentUserId));
+        document.getElementById("allGroupsList").innerHTML = notJoined.map(g => `
+            <div class="group-card" onclick="openGroupDetail(${g.group_id})">
+                <div class="group-info">
+                    <h4>${g.group_name}</h4>
+                    <p>${g.description} · ${g.members.length}人</p>
+                </div>
+                <button class="join-btn" onclick="event.stopPropagation(); joinGroup(${g.group_id})">+ 加入</button>
+            </div>
+        `).join('') || '<div class="empty-state">没有更多小组了~</div>';
+
+        const myGroups = groups.filter(g => g.members.includes(currentUserId));
+        document.getElementById("myGroupsList").innerHTML = myGroups.map(g => `
+            <div class="group-card" onclick="openGroupDetail(${g.group_id})">
+                <div class="group-info">
+                    <h4>${g.group_name}</h4>
+                    <p>${g.description} · ${g.members.length}人</p>
+                </div>
+                <button class="join-btn" style="background:#e87c7c;" onclick="event.stopPropagation(); leaveGroup(${g.group_id})">退出</button>
+            </div>
+        `).join('') || '<div class="empty-state">还没有加入任何小组~</div>';
+    }
+
+    async function joinGroup(groupId) {
+        await fetch(`${API_BASE}/api/groups/${groupId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: currentUserId })
+        });
+        loadGroups();
+    }
+
+    async function leaveGroup(groupId) {
+        if (confirm('退出小组？')) {
+            await fetch(`${API_BASE}/api/groups/${groupId}/members/${currentUserId}`, { method: 'DELETE' });
+            loadGroups();
+        }
+    }
+
+    function openCreateGroupModal() {
+        document.getElementById("groupModal").classList.add("active");
+    }
+
+    async function submitGroup() {
+        const name = document.getElementById("groupNameInput").value;
+        const type = document.getElementById("groupTypeInput").value;
+        const desc = document.getElementById("groupDescInput").value;
+        if (!name) return;
+        await fetch(`${API_BASE}/api/groups`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ group_name: name, group_type: type, description: desc, created_by: currentUserId })
+        });
+        closeModal('groupModal');
+        loadGroups();
+    }
+
+    // ========== 小组详情页 ==========
+    async function openGroupDetail(groupId) {
+        currentGroupId = groupId;
+        const groupRes = await fetch(`${API_BASE}/api/groups/${groupId}`);
+        const groupData = await groupRes.json();
+        if (groupData.code === 200) {
+            const group = groupData.data;
+            document.getElementById("groupDetailTitle").innerText = group.group_name;
+            document.getElementById("groupMemberCount").innerText = group.members.length;
+            document.getElementById("groupDescription").innerText = group.description || "暂无简介";
+            await loadGroupPosts(groupId);
+            document.getElementById("groupDetailPage").classList.add("active");
+        }
+    }
+
+    async function loadGroupPosts(groupId) {
+        const response = await fetch(`${API_BASE}/api/groups/${groupId}/posts`);
+        const data = await response.json();
+        if (data.code === 200) {
+            renderGroupPosts(data.data);
+            document.getElementById("groupPostCount").innerText = data.data.length;
+        }
+    }
+
+    function renderGroupPosts(posts) {
+        const container = document.getElementById("groupPostsList");
+        if (!posts.length) {
+            container.innerHTML = '<div class="empty-state">✨ 暂无动态，发布第一条吧</div>';
+            return;
+        }
+        container.innerHTML = posts.map(post => {
+            const hasLiked = window.likedGroupPosts && window.likedGroupPosts[post.post_id] === currentUserId;
+            const heartIcon = hasLiked ? '❤️' : '🤍';
+            return `
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="user-info">
+                            <div class="avatar avatar-small">${post.anonymous_name?.charAt(0) || '?'}</div>
+                            <div>
+                                <div class="nickname">${post.anonymous_name || '匿名'}</div>
+                                <div class="post-time">${post.created_at || ''}</div>
+                            </div>
+                        </div>
+                        ${post.emotion_tag ? `<span class="emotion-tag">${post.emotion_tag}</span>` : ''}
+                    </div>
+                    <div class="post-content">${escapeHtml(post.content)}</div>
+                    <div class="post-footer">
+                        <button class="post-action" onclick="likeGroupPost(${post.post_id})">${heartIcon} ${post.likes || 0}</button>
+                        <button class="post-action">💬 ${post.comments?.length || 0}</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function likeGroupPost(postId) {
+        const res = await fetch(`${API_BASE}/api/group-posts/${postId}/like?user_id=${currentUserId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.code === 200) {
+            if (window.likedGroupPosts[postId] === currentUserId) delete window.likedGroupPosts[postId];
+            else window.likedGroupPosts[postId] = currentUserId;
+            localStorage.setItem('likedGroupPosts', JSON.stringify(window.likedGroupPosts));
+            loadGroupPosts(currentGroupId);
+        }
+    }
+
+    function openGroupPostModal() {
+        document.getElementById("groupPostContent").value = "";
+        document.getElementById("groupPostEmotion").value = "";
+        document.getElementById("groupPostModal").classList.add("active");
+    }
+
+    async function submitGroupPost() {
+        const content = document.getElementById("groupPostContent").value;
+        const emotion = document.getElementById("groupPostEmotion").value;
+        if (!content.trim()) return;
+        const url = `${API_BASE}/api/groups/${currentGroupId}/posts?user_id=${currentUserId}&content=${encodeURIComponent(content)}&emotion_tag=${encodeURIComponent(emotion)}`;
+        const res = await fetch(url, { method: 'POST' });
+        const data = await res.json();
+        if (data.code === 200) {
+            closeModal('groupPostModal');
+            loadGroupPosts(currentGroupId);
+        } else {
+            alert("发布失败");
+        }
+    }
+
+    async function showGroupMembers() {
+        const res = await fetch(`${API_BASE}/api/groups/${currentGroupId}`);
+        const data = await res.json();
+        if (data.code === 200) {
+            const group = data.data;
+            let html = '';
+            for (const mid of group.members) {
+                const user = users[mid] || { nickname: "用户" + mid, avatar: "😊" };
+                html += `
+                    <div class="member-item">
+                        <div class="avatar avatar-small">${user.avatar}</div>
+                        <div><div>${user.nickname}</div><div style="font-size:12px; color:#999;">${mid === group.created_by ? "创建者" : "成员"}</div></div>
+                    </div>
+                `;
+            }
+            document.getElementById("membersList").innerHTML = html;
+            document.getElementById("membersModal").classList.add("active");
+        }
+    }
+
+    function closeGroupDetail() {
+        document.getElementById("groupDetailPage").classList.remove("active");
+        currentGroupId = null;
+    }
+
+    async function leaveGroupFromDetail() {
+        if (confirm('退出小组？')) {
+            await fetch(`${API_BASE}/api/groups/${currentGroupId}/members/${currentUserId}`, { method: 'DELETE' });
+            closeGroupDetail();
+            loadGroups();
+        }
+    }
+
+    // ========== 我的页面相关 ==========
+    function openPostModal() {
+        document.getElementById("postModal").classList.add("active");
+    }
+
+    async function submitPost() {
+        const emotion = document.getElementById("postEmotion").value;
+        const content = document.getElementById("postContentInput").value;
+        if (!content.trim()) return;
+        await fetch(`${API_BASE}/api/posts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: currentUserId, emotion_tag: emotion, content: content })
+        });
+        closeModal('postModal');
+        document.getElementById("postContentInput").value = "";
+        loadPosts();
+    }
+
+    async function loadMyStats() {
+        const postsRes = await fetch(`${API_BASE}/api/posts`);
+        const postsData = await postsRes.json();
+        const myPosts = postsData.data?.filter(p => p.user_id === currentUserId) || [];
+        document.getElementById("postCount").innerText = myPosts.length;
+        const groupsRes = await fetch(`${API_BASE}/api/groups`);
+        const groupsData = await groupsRes.json();
+        const myGroups = groupsData.data?.filter(g => g.members.includes(currentUserId)) || [];
+        document.getElementById("groupCount").innerText = myGroups.length;
+    }
+
+    async function loadMyData() {
+    // 1. 加载我的帖子
+    const postsRes = await fetch(`${API_BASE}/api/posts`);
+    const postsData = await postsRes.json();
+    const myPosts = postsData.data?.filter(p => p.user_id === currentUserId) || [];
+
+    document.getElementById("myPostsList").innerHTML = myPosts.map(p => `
+        <div class="my-item" onclick="openDetail(${p.post_id})">
+            <div style="font-weight:500;">${escapeHtml(p.content.substring(0, 50))}${p.content.length > 50 ? '...' : ''}</div>
+            <div style="font-size:12px; color:#999; margin-top:4px;">${p.created_at} · ❤️ ${p.likes} · 💬 ${p.comments?.length || 0}</div>
+        </div>
+    `).join('') || '<div class="empty-state">暂无发布</div>';
+
+    // 2. 加载我的小组
+    const groupsRes = await fetch(`${API_BASE}/api/groups`);
+    const groupsData = await groupsRes.json();
+    const myGroups = groupsData.data?.filter(g => g.members.includes(currentUserId)) || [];
+
+    document.getElementById("myGroupsListProfile").innerHTML = myGroups.map(g => `
+        <div class="my-item" onclick="openGroupDetail(${g.group_id})">
+            <div style="font-weight:500; display:flex; justify-content:space-between;">
+                <span>${g.group_name}</span>
+                <span style="font-size:12px; color:#7C9E6E;">${g.members.length}人</span>
+            </div>
+            <div style="font-size:12px; color:#999; margin-top:4px;">${g.description || '暂无简介'}</div>
+            <div style="font-size:11px; color:#B0BEB0; margin-top:4px;">创建于 ${g.created_at}</div>
+        </div>
+    `).join('') || '<div class="empty-state">还没有加入任何小组~</div>';
+}
+
+    function openEditProfileModal() {
+        const user = getCurrentUser();
+        document.getElementById("editNickname").value = user.nickname;
+        document.getElementById("editBio").value = user.bio || "";
+        document.getElementById("editAvatar").value = user.avatar;
+        document.getElementById("editProfileModal").classList.add("active");
+    }
+
+    function saveProfile() {
+        const nickname = document.getElementById("editNickname").value.trim();
+        if (!nickname) return;
+        users[currentUserId] = {
+            ...users[currentUserId],
+            nickname: nickname,
+            bio: document.getElementById("editBio").value,
+            avatar: document.getElementById("editAvatar").value
+        };
+        saveUsers();
+        closeModal('editProfileModal');
+        updateProfileUI();
+    }
+
+    function getAllUsers() { return Object.values(users); }
+
+    function renderUserList() {
+        const container = document.getElementById("userList");
+        container.innerHTML = getAllUsers().map(user => `
+            <div class="user-item" onclick="switchToUser(${user.id})">
+                <div class="avatar avatar-small">${user.avatar}</div>
+                <div><div>${user.nickname}</div><div style="font-size:12px;">${user.bio || ""}</div></div>
+                ${currentUserId === user.id ? '<span>✓</span>' : ''}
+            </div>
+        `).join('');
+    }
+
+    function switchToUser(userId) {
+        currentUserId = userId;
+        closeModal('switchUserModal');
+        updateProfileUI();
+        loadData();
+    }
+
+    function openSwitchUserModal() {
+        renderUserList();
+        document.getElementById("switchUserModal").classList.add("active");
+    }
+
+    function openRegisterModal() {
+        closeModal('switchUserModal');
+        document.getElementById("registerModal").classList.add("active");
+    }
+
+    function registerUser() {
+        const nickname = document.getElementById("regNickname").value.trim();
+        if (!nickname) return;
+        users[nextUserId] = {
+            id: nextUserId,
+            nickname: nickname,
+            bio: document.getElementById("regBio").value,
+            avatar: document.getElementById("regAvatar").value
+        };
+        currentUserId = nextUserId;
+        nextUserId++;
+        saveUsers();
+        closeModal('registerModal');
+        updateProfileUI();
+        loadData();
+        document.getElementById("regNickname").value = "";
+        document.getElementById("regBio").value = "";
+    }
+
+    function openDeleteAccountModal() {
+        document.getElementById("deleteAccountName").innerText = getCurrentUser().nickname;
+        document.getElementById("confirmDeleteInput").value = "";
+        document.getElementById("deleteAccountModal").classList.add("active");
+    }
+
+    async function confirmDeleteAccount() {
+        if (document.getElementById("confirmDeleteInput").value !== "确认注销") {
+            alert('请输入"确认注销"');
+            return;
+        }
+        const userId = currentUserId;
+        const postsRes = await fetch(`${API_BASE}/api/posts`);
+        const postsData = await postsRes.json();
+        for (const post of (postsData.data?.filter(p => p.user_id === userId) || [])) {
+            await fetch(`${API_BASE}/api/posts/${post.post_id}`, { method: 'DELETE' });
+        }
+        delete users[userId];
+        saveUsers();
+        const remaining = getAllUsers();
+        currentUserId = remaining.length ? remaining[0].id : 1;
+        if (!users[currentUserId]) users[currentUserId] = { id: currentUserId, nickname: "用户", avatar: "😊" };
+        closeModal('deleteAccountModal');
+        updateProfileUI();
+        loadData();
+    }
+
+    async function loadData() {
+        await loadPosts();
+        await loadGroups();
+        await loadMyStats();
+        if (document.getElementById("profilePage").classList.contains("active")) await loadMyData();
+        updateProfileUI();
+    }
+
+// Tab 切换
+document.querySelectorAll('.tab-item[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const page = btn.dataset.page;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`${page}Page`).classList.add('active');
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        // 控制加号按钮显示/隐藏
+        const fabButton = document.getElementById('fabButton');
+        if (page === 'home') {
+            fabButton.style.display = 'flex';  // 首页显示加号
+        } else {
+            fabButton.style.display = 'none';  // 其他页面隐藏加号
+        }
+
+        if (page === 'profile') {
+            loadMyData();
+            loadMyStats();
+            updateProfileUI();
+        } else if (page === 'group') {
+            loadGroups();
+        } else {
+            loadPosts();
+        }
+    });
+});
+    // 我的页面内部 Tab 切换
+document.querySelectorAll('[data-mytab]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const tab = btn.dataset.mytab;
+
+        if (tab === 'posts') {
+            // 显示帖子列表，隐藏小组列表
+            document.getElementById('myPostsList').style.display = 'block';
+            document.getElementById('myGroupsListProfile').style.display = 'none';
+
+            // 刷新我的帖子
+            const postsRes = await fetch(`${API_BASE}/api/posts`);
+            const postsData = await postsRes.json();
+            const myPosts = postsData.data?.filter(p => p.user_id === currentUserId) || [];
+
+            document.getElementById("myPostsList").innerHTML = myPosts.map(p => `
+                <div class="my-item" onclick="openDetail(${p.post_id})">
+                    <div style="font-weight:500;">${escapeHtml(p.content.substring(0, 50))}${p.content.length > 50 ? '...' : ''}</div>
+                    <div style="font-size:12px; color:#999; margin-top:4px;">${p.created_at} · ❤️ ${p.likes}</div>
+                </div>
+            `).join('') || '<div class="empty-state">暂无发布</div>';
+
+        } else if (tab === 'groups') {
+            // 显示小组列表，隐藏帖子列表
+            document.getElementById('myPostsList').style.display = 'none';
+            document.getElementById('myGroupsListProfile').style.display = 'block';
+
+            // 刷新我的小组
+            const groupsRes = await fetch(`${API_BASE}/api/groups`);
+            const groupsData = await groupsRes.json();
+            const myGroups = groupsData.data?.filter(g => g.members.includes(currentUserId)) || [];
+
+            document.getElementById("myGroupsListProfile").innerHTML = myGroups.map(g => `
+                <div class="my-item" onclick="openGroupDetail(${g.group_id})">
+                    <div style="font-weight:500;">${g.group_name}</div>
+                    <div style="font-size:12px; color:#999; margin-top:4px;">${g.description || '暂无简介'} · ${g.members.length}人</div>
+                    <div style="font-size:11px; color:#B0BEB0; margin-top:4px;">创建于 ${g.created_at}</div>
+                </div>
+            `).join('') || '<div class="empty-state">还没有加入任何小组~</div>';
+        }
+    });
+});
+
+// 确保我的页面初始显示帖子列表
+document.getElementById('myPostsList').style.display = 'block';
+document.getElementById('myGroupsListProfile').style.display = 'none';
+
+    loadUsers();
+    updateProfileUI();
+    loadData();
+</script>
+</body>
+</html>

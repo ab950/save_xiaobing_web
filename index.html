@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Save Xiaobing</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      /* 1. 样式修复：锁定 16:9 并居中 */
+      body { padding: 0; margin: 0; background: #231f20; overflow: hidden; }
+      #unity-container { 
+        width: 100vw; height: 56.25vw; 
+        max-width: 100%; max-height: 100vh;
+        aspect-ratio: 16 / 9;
+        margin: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      }
+      #unity-canvas { width: 100% !important; height: 100% !important; background: #231f20; }
+      
+      /* 2. 社区浮层样式 */
+      #community-wrapper {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        z-index: 9999; background: rgba(0,0,0,0.85);
+      }
+
+      #unity-footer { position: fixed; bottom: 10px; width: 100%; text-align: center; color: white; pointer-events: none; }
+      #unity-fullscreen-button { pointer-events: auto; cursor: pointer; display: inline-block; padding: 0 10px; }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+
+    <div id="unity-footer">
+      <div id="unity-build-title">Project: Save Xiaobing</div>
+      <div id="unity-fullscreen-button">[ 全屏模式 ]</div>
+    </div>
+
+    <div id="community-wrapper">
+      <button onclick="document.getElementById('community-wrapper').style.display='none'" 
+              style="position:absolute; right:20px; top:20px; padding:12px 25px; background:#4a90e2; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; z-index:10001;">
+        返回游戏
+      </button>
+      <iframe id="community-iframe" src="community_app.html" style="width:100%; height:100%; border:none;"></iframe>
+    </div>
+
+    <script>
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      // 使用你新导出的带 .unityweb 的配置
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebGL_Build.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/WebGL_Build.data.unityweb",
+        frameworkUrl: buildUrl + "/WebGL_Build.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebGL_Build.wasm.unityweb",
+        symbolsUrl: buildUrl + "/WebGL_Build.symbols.json.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Save Xiaobing",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+        matchWebGLToCanvasSize: false, // 必须为 false 以防变糊
+        devicePixelRatio: window.devicePixelRatio || 1,
+      };
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          window.unityInstance = unityInstance; 
+
+          // --- 4. 关键：重新加回清晰度同步逻辑 ---
+          function syncResolution() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+          }
+          setTimeout(syncResolution, 500);
+          window.addEventListener('resize', syncResolution);
+
+          loadingBar.style.display = "none";
+          fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
+        }).catch((message) => { alert(message); });
+      };
+
+      // --- 5. 关键：重新加回社区跳转监听 ---
+      window.OpenCommunity = function() {
+        console.log("收到 Unity 指令：打开社区");
+        document.getElementById('community-wrapper').style.display = 'block';
+        // 刷新一下 iframe 防止缓存
+        document.getElementById('community-iframe').contentWindow.location.reload();
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

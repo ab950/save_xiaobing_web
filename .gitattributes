@@ -1,1 +1,2 @@
 Build/*.unityweb filter=lfs diff=lfs merge=lfs -text
+Build/WebGL_Build.data filter=lfs diff=lfs merge=lfs -text
